@@ -1,7 +1,14 @@
 package com.dicoding.diaryapp.navigation
 
+import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
@@ -9,13 +16,19 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.dicoding.diaryapp.presentation.components.DisplayAlertDialog
 import com.dicoding.diaryapp.presentation.screens.auth.AuthenticationScreen
 import com.dicoding.diaryapp.presentation.screens.auth.AuthenticationViewModel
 import com.dicoding.diaryapp.presentation.screens.home.HomeScreen
+import com.dicoding.diaryapp.util.Constants.APP_ID
 import com.dicoding.diaryapp.util.Constants.WRITE_SCREEN_ARGUMENT_KEY
 import com.stevdzasan.messagebar.rememberMessageBarState
 import com.stevdzasan.onetap.OneTapSignInState
 import com.stevdzasan.onetap.rememberOneTapSignInState
+import io.realm.kotlin.mongodb.App
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
 fun SetupNavGraph(startDestination: String, navController: NavHostController) {
@@ -31,7 +44,11 @@ fun SetupNavGraph(startDestination: String, navController: NavHostController) {
         )
         homeRoute(navigateToWrite = {
             navController.navigate(Screen.Write.route)
-        })
+        },
+            navigateToAuth = {
+                navController.popBackStack()
+                navController.navigate(Screen.Authentication.route)
+            })
         writeRoute()
     }
 
@@ -76,12 +93,47 @@ fun NavGraphBuilder.authenticationRoute(navigateToHome: () -> Unit) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 fun NavGraphBuilder.homeRoute(
-    navigateToWrite: () -> Unit
+    navigateToWrite: () -> Unit,
+    navigateToAuth: () -> Unit
 ) {
     composable(route = Screen.Home.route) {
-        HomeScreen(onMenuClicked = {}, onNavigateToWrite = navigateToWrite
+        val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+        var signOutDialogOpened by remember { mutableStateOf(false) }
+        val scope = rememberCoroutineScope()
+        HomeScreen(
+            onMenuClicked = {
+                scope.launch {
+                    drawerState.open()
+                }
+            },
+            onNavigateToWrite = navigateToWrite,
+            drawerState = drawerState,
+            onSignOutClicked = {
+                signOutDialogOpened = true
+            }
         )
+
+        DisplayAlertDialog(
+            title = "Sign Out",
+            message = "Are you sure you want to sign out?",
+            dialogOpened = signOutDialogOpened,
+            onDialogClosed = { signOutDialogOpened = false },
+            onYesClicked = {
+                scope.launch(Dispatchers.IO) {
+                    val user = App.create(APP_ID).currentUser
+                    user?.apply {
+                        logOut()
+                        withContext(Dispatchers.Main) {
+                            navigateToAuth()
+                        }
+
+                    }
+                }
+            },
+        )
+
     }
 }
 
