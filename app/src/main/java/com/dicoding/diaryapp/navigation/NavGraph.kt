@@ -4,6 +4,7 @@ import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -16,12 +17,15 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.dicoding.diaryapp.data.repository.MongoDB
 import com.dicoding.diaryapp.presentation.components.DisplayAlertDialog
 import com.dicoding.diaryapp.presentation.screens.auth.AuthenticationScreen
 import com.dicoding.diaryapp.presentation.screens.auth.AuthenticationViewModel
 import com.dicoding.diaryapp.presentation.screens.home.HomeScreen
+import com.dicoding.diaryapp.presentation.screens.home.HomeViewModel
 import com.dicoding.diaryapp.util.Constants.APP_ID
 import com.dicoding.diaryapp.util.Constants.WRITE_SCREEN_ARGUMENT_KEY
+import com.dicoding.diaryapp.util.RequestState
 import com.stevdzasan.messagebar.rememberMessageBarState
 import com.stevdzasan.onetap.OneTapSignInState
 import com.stevdzasan.onetap.rememberOneTapSignInState
@@ -31,7 +35,11 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 @Composable
-fun SetupNavGraph(startDestination: String, navController: NavHostController) {
+fun SetupNavGraph(
+    startDestination: String,
+    navController: NavHostController,
+    onDataLoaded: () -> Unit
+) {
     NavHost(
         startDestination = startDestination,
         navController = navController
@@ -40,27 +48,36 @@ fun SetupNavGraph(startDestination: String, navController: NavHostController) {
             navigateToHome = {
                 navController.popBackStack()
                 navController.navigate(Screen.Home.route)
-            }
+            },
+            onDataLoaded = onDataLoaded
         )
-        homeRoute(navigateToWrite = {
-            navController.navigate(Screen.Write.route)
-        },
+        homeRoute(
+            navigateToWrite = {
+                navController.navigate(Screen.Write.route)
+            },
             navigateToAuth = {
                 navController.popBackStack()
                 navController.navigate(Screen.Authentication.route)
-            })
+            },
+            onDataLoaded = onDataLoaded
+        )
         writeRoute()
     }
 
 }
 
-fun NavGraphBuilder.authenticationRoute(navigateToHome: () -> Unit) {
+fun NavGraphBuilder.authenticationRoute(navigateToHome: () -> Unit, onDataLoaded: () -> Unit) {
     composable(route = Screen.Authentication.route) {
         val viewModel: AuthenticationViewModel = viewModel()
         val authenticated by viewModel.authenticated
         val loadingState by viewModel.loadingState
         val oneTapState = rememberOneTapSignInState()
         val messageBarState = rememberMessageBarState()
+
+        LaunchedEffect(key1 = Unit) {
+            onDataLoaded()
+        }
+
         AuthenticationScreen(
             authenticated = authenticated,
             loadingState = loadingState,
@@ -96,13 +113,24 @@ fun NavGraphBuilder.authenticationRoute(navigateToHome: () -> Unit) {
 @OptIn(ExperimentalMaterial3Api::class)
 fun NavGraphBuilder.homeRoute(
     navigateToWrite: () -> Unit,
-    navigateToAuth: () -> Unit
+    navigateToAuth: () -> Unit,
+    onDataLoaded: () -> Unit
 ) {
     composable(route = Screen.Home.route) {
+        val viewModel: HomeViewModel = viewModel()
+        val diaries by viewModel.diaries
         val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
         var signOutDialogOpened by remember { mutableStateOf(false) }
         val scope = rememberCoroutineScope()
+
+        LaunchedEffect(key1 = diaries) {
+            if (diaries !is RequestState.Loading) {
+                onDataLoaded()
+            }
+        }
+
         HomeScreen(
+            diaries = diaries,
             onMenuClicked = {
                 scope.launch {
                     drawerState.open()
@@ -114,6 +142,10 @@ fun NavGraphBuilder.homeRoute(
                 signOutDialogOpened = true
             }
         )
+
+        LaunchedEffect(key1 = Unit) {
+            MongoDB.configureTheRealm()
+        }
 
         DisplayAlertDialog(
             title = "Sign Out",

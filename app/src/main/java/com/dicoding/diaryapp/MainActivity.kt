@@ -19,35 +19,26 @@ import com.dicoding.diaryapp.util.Constants.APP_ID
 import io.realm.kotlin.mongodb.App
 
 class MainActivity : ComponentActivity() {
+
+    var keepSplashOpened = true
     @RequiresApi(Build.VERSION_CODES.S)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        installSplashScreen()
+        installSplashScreen().setKeepOnScreenCondition{
+            keepSplashOpened
+        }
         WindowCompat.setDecorFitsSystemWindows(window, false)
-//        splashScreen.setOnExitAnimationListener { splashScreenView ->
-//            // Create your custom animation.
-//            val slideUp = ObjectAnimator.ofFloat(
-//                splashScreenView,
-//                View.TRANSLATION_Y,
-//                0f,
-//                -splashScreenView.height.toFloat()
-//            )
-//            slideUp.interpolator = AnticipateInterpolator()
-//            slideUp.duration = 200L
-//
-//            // Call SplashScreenView.remove at the end of your custom animation.
-//            slideUp.doOnEnd { splashScreenView.remove() }
-//
-//            // Run your animation.
-//            slideUp.start()
-//        }
+
 
         setContent {
             DiaryAppTheme {
                 val navController = rememberNavController()
                 SetupNavGraph(
                     startDestination = getStartDestination(),
-                    navController = navController
+                    navController = navController,
+                    onDataLoaded = {
+                        keepSplashOpened = false
+                    }
                 )
             }
         }
