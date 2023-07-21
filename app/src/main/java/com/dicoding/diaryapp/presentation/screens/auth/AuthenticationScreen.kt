@@ -12,6 +12,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import com.dicoding.diaryapp.util.Constants.CLIENT_ID
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.GoogleAuthProvider
 import com.stevdzasan.messagebar.ContentWithMessageBar
 import com.stevdzasan.messagebar.MessageBarState
 import com.stevdzasan.onetap.OneTapSignInState
@@ -26,14 +28,17 @@ fun AuthenticationScreen(
     oneTapState: OneTapSignInState,
     messageBarState: MessageBarState,
     onButtonClicked: () -> Unit,
-    onTokenIdReceived: (String) -> Unit,
+    onSuccessfullFirebaseSignIn: (String) -> Unit,
+    onFailedFirebaseSignIn: (Exception) -> Unit,
     onDialogDismissed: (String) -> Unit,
     navigateToHome: () -> Unit
 ) {
-    Scaffold(modifier = Modifier
-        .background(MaterialTheme.colorScheme.surface)
-        .statusBarsPadding()
-        .navigationBarsPadding()) {
+    Scaffold(
+        modifier = Modifier
+            .background(MaterialTheme.colorScheme.surface)
+            .statusBarsPadding()
+            .navigationBarsPadding()
+    ) {
         ContentWithMessageBar(messageBarState = messageBarState) {
             AuthenticationContent(
                 loadingState = loadingState,
@@ -42,9 +47,19 @@ fun AuthenticationScreen(
         }
     }
 
-    OneTapSignInWithGoogle(state = oneTapState, clientId = CLIENT_ID, onTokenIdReceived = {
-        Log.d("Auth", "token id: $it")
-        onTokenIdReceived(it)
+    OneTapSignInWithGoogle(state = oneTapState, clientId = CLIENT_ID, onTokenIdReceived = { tokenId ->
+        val credential = GoogleAuthProvider.getCredential(tokenId, null)
+        FirebaseAuth.getInstance().signInWithCredential(credential)
+            .addOnCompleteListener { task ->
+                if(task.isSuccessful){
+                    onSuccessfullFirebaseSignIn(tokenId)
+                }else{
+                    task.exception?.let {  onFailedFirebaseSignIn(it) }
+                }
+            }
+            .addOnFailureListener {
+                onFailedFirebaseSignIn(it)
+            }
     }, onDialogDismissed = {
         onDialogDismissed(it)
     })

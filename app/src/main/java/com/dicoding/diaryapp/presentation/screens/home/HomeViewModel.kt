@@ -6,7 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dicoding.diaryapp.data.repository.Diaries
 import com.dicoding.diaryapp.data.repository.MongoDB
-import com.dicoding.diaryapp.util.RequestState
+import com.dicoding.diaryapp.model.RequestState
 import kotlinx.coroutines.launch
 
 class HomeViewModel :ViewModel() {

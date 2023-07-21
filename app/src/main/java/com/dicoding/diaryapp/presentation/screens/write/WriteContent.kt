@@ -1,5 +1,6 @@
 package com.dicoding.diaryapp.presentation.screens.write
 
+import android.net.Uri
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -36,10 +37,13 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.dicoding.diaryapp.model.Diary
+import com.dicoding.diaryapp.model.GalleryState
 import com.dicoding.diaryapp.model.Mood
+import com.dicoding.diaryapp.presentation.components.GalleryUploader
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.PagerState
+import io.realm.kotlin.ext.toRealmList
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalPagerApi::class, ExperimentalMaterial3Api::class)
@@ -48,11 +52,13 @@ fun WriteContent(
     uiState: uiState,
     paddingValues: PaddingValues,
     pagerState: PagerState,
+    galleryState: GalleryState,
     title: String,
     onTitleChange: (String) -> Unit,
     description: String,
     onDescriptionChanged: (String) -> Unit,
     onSaveClicked: (Diary) -> Unit,
+    onImageSelect : (Uri) -> Unit
 ) {
     val scrollState = rememberScrollState()
     val context = LocalContext.current
@@ -143,6 +149,13 @@ fun WriteContent(
         }
         Column(verticalArrangement = Arrangement.Bottom) {
             Spacer(modifier = Modifier.height(12.dp))
+            GalleryUploader(
+                galleryState = galleryState,
+                onAddClicked = { focusManager.clearFocus() },
+                onImageSelect = onImageSelect,
+                onImageClicked ={}
+            )
+            Spacer(modifier = Modifier.height(12.dp))
             Button(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -153,6 +166,7 @@ fun WriteContent(
                             this.title = uiState.title
                             this.description = uiState.description
                             mood = Mood.values()[pagerState.currentPage].name
+                            this.images = galleryState.images.map { it.remoteImagePath }.toRealmList()
                         })
                     } else {
                         Toast.makeText(context, "Please fill all the fields", Toast.LENGTH_SHORT)

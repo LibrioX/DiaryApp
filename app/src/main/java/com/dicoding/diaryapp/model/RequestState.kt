@@ -1,4 +1,4 @@
-package com.dicoding.diaryapp.util
+package com.dicoding.diaryapp.model
 
 sealed class RequestState<out T>{
     object Idle: RequestState<Nothing>()

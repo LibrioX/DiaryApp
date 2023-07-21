@@ -22,7 +22,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.dicoding.diaryapp.data.repository.MongoDB
-import com.dicoding.diaryapp.model.Diary
+import com.dicoding.diaryapp.model.GalleryImage
 import com.dicoding.diaryapp.model.Mood
 import com.dicoding.diaryapp.presentation.components.DisplayAlertDialog
 import com.dicoding.diaryapp.presentation.screens.auth.AuthenticationScreen
@@ -33,11 +33,11 @@ import com.dicoding.diaryapp.presentation.screens.write.WriteScreen
 import com.dicoding.diaryapp.presentation.screens.write.WriteViewModel
 import com.dicoding.diaryapp.util.Constants.APP_ID
 import com.dicoding.diaryapp.util.Constants.WRITE_SCREEN_ARGUMENT_KEY
-import com.dicoding.diaryapp.util.RequestState
+import com.dicoding.diaryapp.model.RequestState
+import com.dicoding.diaryapp.model.rememberGalleryState
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.rememberPagerState
 import com.stevdzasan.messagebar.rememberMessageBarState
-import com.stevdzasan.onetap.OneTapSignInState
 import com.stevdzasan.onetap.rememberOneTapSignInState
 import io.realm.kotlin.mongodb.App
 import kotlinx.coroutines.Dispatchers
@@ -98,7 +98,7 @@ fun NavGraphBuilder.authenticationRoute(navigateToHome: () -> Unit, onDataLoaded
             loadingState = loadingState,
             oneTapState = oneTapState,
             messageBarState = messageBarState,
-            onTokenIdReceived = { token ->
+            onSuccessfullFirebaseSignIn = { token ->
                 viewModel.signInWithMongoAtlas(
                     tokenId = token,
                     onSuccess = {
@@ -111,6 +111,10 @@ fun NavGraphBuilder.authenticationRoute(navigateToHome: () -> Unit, onDataLoaded
                     }
                 )
 
+            },
+            onFailedFirebaseSignIn = {
+                messageBarState.addError(it)
+                viewModel.setLoading(false)
             },
             onDialogDismissed = {
                 messageBarState.addError(Exception(it))
@@ -201,6 +205,7 @@ fun NavGraphBuilder.writeRoute(onBackPressed: () -> Unit) {
         val context = LocalContext.current
         val uiState = viewModel.uiState
         val pagerState = rememberPagerState()
+        val galleryState = viewModel.galleryState
         val pageNumber by remember {
             derivedStateOf {
                 pagerState.currentPage
@@ -214,6 +219,7 @@ fun NavGraphBuilder.writeRoute(onBackPressed: () -> Unit) {
         WriteScreen(
             uiState = uiState,
             pagerState = pagerState,
+            galleryState = galleryState,
             onDeleteConfirmed = {
                 viewModel.deleteDiary(
                     onSuccess = {
@@ -245,6 +251,13 @@ fun NavGraphBuilder.writeRoute(onBackPressed: () -> Unit) {
                         Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
                     }
 
+                )
+            },
+            onImageSelect = {
+                val type = context.contentResolver.getType(it)?.split("/")?.last() ?: "jpg"
+                viewModel.addImage(
+                    image = it,
+                    imageType =type
                 )
             }
         )

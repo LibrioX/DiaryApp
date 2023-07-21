@@ -16,6 +16,7 @@ import com.dicoding.diaryapp.navigation.Screen
 import com.dicoding.diaryapp.navigation.SetupNavGraph
 import com.dicoding.diaryapp.ui.theme.DiaryAppTheme
 import com.dicoding.diaryapp.util.Constants.APP_ID
+import com.google.firebase.FirebaseApp
 import io.realm.kotlin.mongodb.App
 
 class MainActivity : ComponentActivity() {
@@ -24,11 +25,12 @@ class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.S)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         installSplashScreen().setKeepOnScreenCondition{
             keepSplashOpened
         }
         WindowCompat.setDecorFitsSystemWindows(window, false)
-
+        FirebaseApp.initializeApp(this)
 
         setContent {
             DiaryAppTheme {

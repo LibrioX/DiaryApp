@@ -3,7 +3,7 @@ package com.dicoding.diaryapp.data.repository
 import android.util.Log
 import com.dicoding.diaryapp.model.Diary
 import com.dicoding.diaryapp.util.Constants.APP_ID
-import com.dicoding.diaryapp.util.RequestState
+import com.dicoding.diaryapp.model.RequestState
 import com.dicoding.diaryapp.util.toInstant
 import io.realm.kotlin.Realm
 import io.realm.kotlin.ext.query

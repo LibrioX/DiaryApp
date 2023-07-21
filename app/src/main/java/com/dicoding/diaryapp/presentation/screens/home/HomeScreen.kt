@@ -30,11 +30,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.semantics.Role.Companion.Image
 import androidx.compose.ui.unit.dp
 import com.dicoding.diaryapp.R
 import com.dicoding.diaryapp.data.repository.Diaries
-import com.dicoding.diaryapp.util.RequestState
+import com.dicoding.diaryapp.model.RequestState
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
