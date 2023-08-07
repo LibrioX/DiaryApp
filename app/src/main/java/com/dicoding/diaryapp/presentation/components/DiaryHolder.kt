@@ -129,12 +129,12 @@ fun DiaryHolder(diary: Diary, onClick: (String) -> Unit) {
                 if (diary.images.isNotEmpty()) {
                     ShowGalleryButton(
                         galleryOpened = galleryOpened,
-                        galleryLoading = false,
+                        galleryLoading = galleryLoading,
                         onClick = {
                             galleryOpened = !galleryOpened
                         })
                 }
-                AnimatedVisibility(visible = galleryOpened ,
+                AnimatedVisibility(visible = galleryOpened && !galleryLoading ,
                     enter = fadeIn() + expandVertically(
                         animationSpec = spring(
                             dampingRatio = Spring.DampingRatioMediumBouncy,

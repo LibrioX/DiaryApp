@@ -2,7 +2,11 @@ package com.dicoding.diaryapp.util
 
 import android.net.Uri
 import android.util.Log
+import androidx.core.net.toUri
+import com.dicoding.diaryapp.data.database.entity.ImageToDelete
+import com.dicoding.diaryapp.data.database.entity.ImageToUpload
 import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.ktx.storageMetadata
 import io.realm.kotlin.types.RealmInstant
 import java.time.Instant
 
@@ -48,4 +52,26 @@ fun Instant.toRealmInstant(): RealmInstant {
     } else {
         RealmInstant.from(sec + 1, -1_000_000 + nano)
     }
+}
+
+
+fun retryUploadingImageToFirebase(
+    imageToUpload: ImageToUpload,
+    onSuccess: () -> Unit
+) {
+    val storage = FirebaseStorage.getInstance().reference
+    storage.child(imageToUpload.remoteImagePath).putFile(
+        imageToUpload.imageUri.toUri(),
+        storageMetadata { },
+        imageToUpload.sessionUri.toUri()
+    ).addOnSuccessListener { onSuccess() }
+}
+
+fun retryDeletingImageFromFirebase(
+    imageToDelete: ImageToDelete,
+    onSuccess: () -> Unit
+) {
+    val storage = FirebaseStorage.getInstance().reference
+    storage.child(imageToDelete.remoteImagePath).delete()
+        .addOnSuccessListener { onSuccess() }
 }

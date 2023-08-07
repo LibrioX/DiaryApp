@@ -53,6 +53,7 @@ fun AuthenticationScreen(
             .addOnCompleteListener { task ->
                 if(task.isSuccessful){
                     onSuccessfullFirebaseSignIn(tokenId)
+                    Log.d("AuthenticationScreen", "onTokenIdReceived: $tokenId")
                 }else{
                     task.exception?.let {  onFailedFirebaseSignIn(it) }
                 }
