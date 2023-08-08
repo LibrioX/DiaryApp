@@ -1,10 +1,11 @@
 # DiaryApp (Android Jetpack Compose)
 The DiaryApp is an application where users can save their diaries to the cloud. This project is built using Jetpack Compose and is a part of [Stevdza-san](https://github.com/stevdza-san) learning courses.
 
-![1](https://github.com/LibrioX/DiaryApp/assets/106506074/9856f1ec-b1a6-4de6-b473-b5c8c2e93a65)
-![4](https://github.com/LibrioX/DiaryApp/assets/106506074/68a8eec9-348f-48e6-9eeb-305edc245d77)
-![2](https://github.com/LibrioX/DiaryApp/assets/106506074/271c7147-e7e1-4a2e-88ee-79eeb3a444b5)
-![3](https://github.com/LibrioX/DiaryApp/assets/106506074/7f6639a2-87ca-428b-be8b-a2b6a5a0f591)
+### User Interface
+![1](https://github.com/LibrioX/DiaryApp/assets/106506074/637aca80-fb93-4a7b-a387-dbe76edf4827)
+![4](https://github.com/LibrioX/DiaryApp/assets/106506074/14603cd5-a7c4-4d02-9daa-7f6352c282d6)
+![2](https://github.com/LibrioX/DiaryApp/assets/106506074/2d9fa466-4433-4473-b719-2bd0a9db7466)
+![3](https://github.com/LibrioX/DiaryApp/assets/106506074/12229a32-dd8f-429d-a1e8-c972c1866cb7)
 
 ### Feature
 - **Login**, Allows users to log in using google account.
